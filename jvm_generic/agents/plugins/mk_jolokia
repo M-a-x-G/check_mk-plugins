@@ -163,7 +163,7 @@ def query_instance(inst):
 
 
     # extension for generic values
-    sys.stdout.write('<<<jolokia_generic>>>\n')
+    sys.stdout.write('<<<jvm_generic>>>\n')
     generic = []
     if inst.get("vars", []):
         for path, title, itemspec in inst.get("vars", []):

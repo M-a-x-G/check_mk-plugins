@@ -1,43 +1,44 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- encoding: utf-8; py-indent-offset: 4 -*-
 #################################################################
 #---------------------------------------------------------------#
 # Author: Markus Weber                                          #
 # Contact: markus.weber@lfst.bayern.de                          #
 # License: GPL                                                  #
-# File: jolokia_generic                                         #
-# Version: 2.2.6                                                #
-# Revision: 23.01.2018                                          #
+# File: jvm_generic                                             #
+# Version: 2.2.7                                                #
+# Revision: 11.11.2024                                          #
 # Description: This Check allows to monitor any given           #
 #  MBean/Attribute of an Application server.                    #
 #################################################################
 
 # Sample output
-# <<<jolokia_generic>>>
-# 8080,/pwm,LoginServlet generic.rate.errorPerRequest.requestCount 878
-# 8080,/pwm,LoginServlet generic.rate.errorPerRequest.errorCount 0
-# 8080,/pwm,LogoutServlet generic.rate.errorPerRequest.requestCount 1
-# 8080,/pwm,LogoutServlet generic.rate.errorPerRequest.errorCount 0
-# 8080,/pwm,LogoutServlet generic.gauge.countAllocated 0
-# dmst1c00s00,dmst1c00s00 generic.gauge.JDBCConStatistic.CurrCapacityHighCount 1
-# dmst1c00s00,dmst1c00s00 generic.gauge.JDBCConStatistic.ActiveConnectionsCurrentCount 0
-# dmst1c00s00,dmst1c00s00 generic.gauge.JDBCConStatistic.CurrCapacity 1
-# dmst1c00s00,dmst1c00s00 generic.gauge.JDBCConErrors.WaitingForConnectionFailureTotal 0
-# dmst1c00s00,dmst1c00s00 generic.gauge.JDBCConErrors.WaitSecondsHighCount 0
-# dmst1c00s00,dmst1c00s00 generic.gauge.JDBCConErrors.LeakedConnectionCount 0
-# dmst1c00s00,dmst1c00s00 generic.string.JDBC_Status.State Running
+# <<<jvm_generic>>>
+# cloud-mailing send_confirmation_email_change generic.gauge.Timer.duration-p99 0.0
+# cloud-mailing send_confirmation_email_change generic.gauge.Timer.duration-min 0.0
+# cloud-mailing send_confirmation_email_change generic.gauge.Timer.duration-max 0.0
+# cloud-mailing send_confirmation_email_change generic.gauge.Timer.duration-mean 0.0
+# cloud-mailing send_confirmation_email_change generic.gauge.Timer.duration-p50 0.0
+# cloud-mailing send_confirmation_email_change generic.gauge.Timer.duration-p999 0.0
+# cloud-mailing send_confirmation_email_change generic.gauge.Timer.duration-stddev 0.0
+# cloud-mailing send_confirmation_email_change generic.gauge.Timer.duration-p95 0.0
+# cloud-mailing send_confirmation_email_change generic.gauge.Timer.duration-p98 0.0
+# cloud-mailing send_confirmation_email_change generic.gauge.Timer.duration-p75 0.0
 
 
 # Default levels for low warn, low crit, high warn, high crit and a empty list for string mode
-factory_settings["jolokia_generic_default_levels"] = { "levels" : [(-1.0, -1.0, 0.0, 0.0, '')], "expectedStrings" : [] }
+factory_settings["jvm_generic_default_levels"] = { "levels" : [(-1.0, -1.0, 0.0, 0.0, '')], "expectedStrings" : [] }
 
-# Fix info list lenghts if string type contains whitespaces
+def savefloat(value):
+    return float(value) if value else 0
+
+# Fix info list lengths if string type contains whitespaces
 def fix_strings_with_whitespaces(info):
     for idx, line in enumerate(info):
         if len(line) > 3:
             info[idx] = line[0], line[1], " ".join(line[2:])
 
-def inventory_jolokia_generic(info):
+def inventory_jvm_generic(info):
     inv = []
     fix_strings_with_whitespaces(info)
     parsed = jolokia_metrics_parse(info)
@@ -73,7 +74,7 @@ def inventory_jolokia_generic(info):
                     continue
     return inv
 
-def check_jolokia_generic(item, params, info):
+def check_jvm_generic(item, params, info):
     import re
     fix_strings_with_whitespaces(info)
     parsed = jolokia_metrics_parse(info)
@@ -115,7 +116,7 @@ def check_jolokia_generic(item, params, info):
             if thresholds:
                 lo_warn, lo_crit, hi_warn, hi_crit, notused = thresholds[0]
             else:
-                lo_warn, lo_crit, hi_warn, hi_crit, notused = factory_settings["jolokia_generic_default_levels"]["levels"][0]
+                lo_warn, lo_crit, hi_warn, hi_crit, notused = factory_settings["jvm_generic_default_levels"]["levels"][0]
 
             if lo_crit is not None and workvalues[i] <= lo_crit:
                 status = 2
@@ -163,10 +164,10 @@ def check_jolokia_generic(item, params, info):
             if thresholds:
                 lo_warn, lo_crit, hi_warn, hi_crit, notused = thresholds[0]
             else:
-                lo_warn, lo_crit, hi_warn, hi_crit, notused = factory_settings["jolokia_generic_default_levels"]["levels"][0] 
+                lo_warn, lo_crit, hi_warn, hi_crit, notused = factory_settings["jvm_generic_default_levels"]["levels"][0]
 
             # rate per minute
-            timedif, rate = get_counter( "jolokia_generic.%s" % (itemParts[-1]), time.time(), savefloat(workvalues[0]) )
+            timedif, rate = get_counter( "jvm_generic.%s" % (itemParts[-1]), time.time(), savefloat(workvalues[0]) )
             rate = rate * 60.0
 
             if lo_crit is not None and rate <= lo_crit:
@@ -220,11 +221,11 @@ def check_jolokia_generic(item, params, info):
             output += "something went wrong! Found more then 2 values in rate mode."
     return (status, output, perf)
 
-check_info["jolokia_generic"] = {
+check_info["jvm_generic"] = {
     "service_description"     : "JVM %s",
-    "check_function"          : check_jolokia_generic,
-    "inventory_function"      : inventory_jolokia_generic,
-    "default_levels_variable" : "jolokia_generic_default_levels",
+    "check_function"          : check_jvm_generic,
+    "inventory_function"      : inventory_jvm_generic,
+    "default_levels_variable" : "jvm_generic_default_levels",
     "group"                   : "jvm_generic",
     "includes"                : [ "jolokia_metrics" ],
     "has_perfdata"            : True,
